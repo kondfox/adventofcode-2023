@@ -1,6 +1,12 @@
 package dec_01
 
-import java.io.File
+/* Part 1 */
+
+fun part1(fileLines: List<String>): Int = fileLines.sumOf {
+     "${it.first(Character::isDigit)}${it.last(Character::isDigit)}".toInt()
+}
+
+/* Part 2 */
 
 val numStrings = mapOf(
     "one" to "1",
@@ -14,16 +20,16 @@ val numStrings = mapOf(
     "nine" to "9",
 )
 
-val regex = Regex("(?=([0-9]|${numStrings.keys.joinToString("|")}))")
-
 fun digit(s: String) = numStrings[s] ?: s
 
-fun main() {
-    File("src/main/kotlin/dec_01/input.txt")
-        .readLines().sumOf {
-            regex.findAll(it).let {
-                "${digit(it.first().groupValues.last())}${digit(it.last().groupValues.last())}".toInt()
+fun part2(fileLines: List<String>): Int {
+    val regex = Regex("(?=([0-9]|${numStrings.keys.joinToString("|")}))")
+
+    fun MatchResult.toDigit() = digit(this.groupValues[1])
+
+    return fileLines.sumOf {
+            regex.findAll(it).let { matches ->
+                "${matches.first().toDigit()}${matches.last().toDigit()}".toInt()
             }
         }
-        .let(::println)
 }
