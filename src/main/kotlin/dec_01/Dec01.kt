@@ -2,10 +2,28 @@ package dec_01
 
 import java.io.File
 
+val numStrings = mapOf(
+    "one" to "1",
+    "two" to "2",
+    "three" to "3",
+    "four" to "4",
+    "five" to "5",
+    "six" to "6",
+    "seven" to "7",
+    "eight" to "8",
+    "nine" to "9",
+)
+
+val regex = Regex("(?=([0-9]|${numStrings.keys.joinToString("|")}))")
+
+fun digit(s: String) = numStrings[s] ?: s
+
 fun main() {
     File("src/main/kotlin/dec_01/input.txt")
-        .readLines()
-        .map { "${it.first(Character::isDigit)}${it.last(Character::isDigit)}".toInt() }
-        .sum()
+        .readLines().sumOf {
+            regex.findAll(it).let {
+                "${digit(it.first().groupValues.last())}${digit(it.last().groupValues.last())}".toInt()
+            }
+        }
         .let(::println)
 }
