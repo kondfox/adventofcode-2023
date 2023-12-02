@@ -32,3 +32,11 @@ private fun List<Map<String, Int>>.mergeGrabs(): Map<String, Int> = this
 
 private fun Map<String, Int>.hasMax(red: Int, green: Int, blue: Int): Boolean =
     (this["red"] ?: 0) <= red && (this["green"] ?: 0) <= green && (this["blue"] ?: 0) <= blue
+
+/* Part 2 */
+
+fun part2(input: List<String>): Int = input.sumOf { game ->
+    countCubes(game).power()
+}
+
+private fun Map<String, Int>.power(): Int = this.values.reduce(Int::times)
