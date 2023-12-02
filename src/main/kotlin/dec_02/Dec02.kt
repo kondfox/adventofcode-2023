@@ -11,23 +11,24 @@ fun part1(input: List<String>): Int = input.mapIndexed { i, game ->
 private fun countCubes(input: String): Map<String, Int> = input
     .split(": ")[1]
     .split("; ")
-    .map(::toGrabOfCubes)
-    .mergeGrabs()
+    .map(::toSamples)
+    .mergeSamples()
 
-private fun toGrabOfCubes(grabOfCubes: String): Map<String, Int> = grabOfCubes
-    .split(", ").map(::toCube).toMap()
+private fun toSamples(samples: String): Map<String, Int> = samples
+    .split(", ")
+    .associate(::toCube)
 
 private fun toCube(cube: String): Pair<String, Int> {
     val (count, color) = cube.split(" ")
     return Pair(color, count.toInt())
 }
 
-private fun List<Map<String, Int>>.mergeGrabs(): Map<String, Int> = this
-    .fold(mutableMapOf()) { mergedGrabs, grabOfCubes ->
-        grabOfCubes.forEach { (color, count) ->
-            mergedGrabs[color] = max(mergedGrabs[color] ?: 0, count)
+private fun List<Map<String, Int>>.mergeSamples(): Map<String, Int> = this
+    .fold(mutableMapOf()) { mergedSamples, samples ->
+        samples.forEach { (color, count) ->
+            mergedSamples[color] = max(mergedSamples[color] ?: 0, count)
         }
-        mergedGrabs
+        mergedSamples
     }
 
 private fun Map<String, Int>.hasMax(red: Int, green: Int, blue: Int): Boolean =
