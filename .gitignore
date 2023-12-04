@@ -30,5 +30,4 @@ bin/
 ### Mac OS ###
 .DS_Store
 
-main.kt
 input.txt
