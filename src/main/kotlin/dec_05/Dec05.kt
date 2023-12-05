@@ -43,43 +43,13 @@ data class Converter(val destinationStart: String, val sourceStart: String, val 
 /* Part 2 */
 
 fun part2(input: List<String>): Long = parseResourceConverters(input.drop(1)).let { resourceConverters ->
-    val seedRanges = parseSeedRanges(input[0])
-    return resourceConverters.fold(seedRanges) { ranges, resourceConverter ->
+    return resourceConverters.fold(parseSeedRanges(input[0])) { ranges, resourceConverter ->
         ranges.flatMap { seedRange ->
-            val intersections = findIntersections(seedRange, resourceConverter)
-            val splitted = splitRange(seedRange, intersections)
-            val converted = splitted.map { resourceConverter.convert(it) }
-            converted
-        }
-    }.map { it.first }.min()
-}
-
-fun findIntersections(seedRange: LongRange, resourceConverter: ResourceConverter): List<LongRange> =
-    resourceConverter.converters.mapNotNull { seedRange.intersect(it.range()) }
-
-fun splitRange(range: LongRange, intersections: List<LongRange>): List<LongRange> {
-    if (intersections.isEmpty()) return listOf(range)
-    val sortedInteractions = intersections.sortedWith(compareBy({ it.first }, { it.last }))
-    val splitted = mutableListOf<LongRange>()
-    if (range.first < sortedInteractions.first().first) {
-        splitted.add(range.first..sortedInteractions.first().first)
-    }
-    sortedInteractions.fold(splitted) { subRanges, intersection ->
-        if (subRanges.isEmpty()) {
-            subRanges.add(intersection)
-        } else {
-            if (subRanges.last().last == intersection.first - 1) {
-                subRanges.add(intersection)
-            } else {
-                subRanges.add(subRanges.last().last + 1..intersection.first)
+            splitRange(seedRange, findIntersections(seedRange, resourceConverter)).map {
+                resourceConverter.convert(it)
             }
         }
-        subRanges
-    }
-    if (range.last > sortedInteractions.last().last) {
-        splitted.add(sortedInteractions.last().last + 1..range.last)
-    }
-    return splitted
+    }.minOf { it.first }
 }
 
 private fun parseSeedRanges(input: String) = input.split(": ")[1]
@@ -87,6 +57,30 @@ private fun parseSeedRanges(input: String) = input.split(": ")[1]
     .map { it.trim().toLong() }
     .windowed(2, 2)
     .map { it[0]..< it[0] + it[1] }
+
+private fun splitRange(range: LongRange, intersections: Set<LongRange>): List<LongRange> {
+    return listOf(*intersections.toTypedArray(), range)
+        .flatMap { listOf(it.first, it.last) }
+        .asSequence()
+        .distinct()
+        .sorted()
+        .windowed(2)
+        .map { it[0]..it[1] }
+        .toList()
+        .let { splitted ->
+            splitted.mapIndexed { i, it ->
+                when {
+                    it in intersections -> it
+                    i == 0 -> it.first..<it.last
+                    i == splitted.lastIndex -> (it.first + 1)..it.last
+                    else -> (it.first + 1)..<it.last
+                }
+            }.filter { it.first <= it.last }
+        }
+}
+
+private fun findIntersections(seedRange: LongRange, resourceConverter: ResourceConverter): Set<LongRange> =
+    resourceConverter.converters.mapNotNull { seedRange.intersect(it.range()) }.toSet()
 
 private fun LongRange.intersect(other: LongRange): LongRange? {
     if (this.last < other.first || this.first > other.last) return null
