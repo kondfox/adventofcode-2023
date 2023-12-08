@@ -16,10 +16,10 @@ fun parse(input: List<String>): Pair<List<Int>, Map<String, List<String>>> {
 }
 
 fun visit(from: String, to: String, map: Map<String, List<String>>, instructions: List<Int>): Long {
-    var now = from
+    var actual = from
     var i = 0L
-    while (now != to)  {
-        now = map[now]!![instructions[(i++ % instructions.size).toInt()]]
+    while (!actual.endsWith(to))  {
+        actual = map[actual]!![instructions[(i++ % instructions.size).toInt()]]
     }
     return i
 }
@@ -29,20 +29,11 @@ fun visit(from: String, to: String, map: Map<String, List<String>>, instructions
 fun part2(input: List<String>): Long {
     val (instructions, map) = parse(input)
     val sources: List<String> = map.keys.filter { it.endsWith("A") }
-    val distances = sources.map { visit(it, map, instructions) }
-    return smallestCommonMultiple(distances)
+    val distances = sources.map { visit(it, "Z", map, instructions) }
+    return lowestCommonMultiple(distances)
 }
 
-fun visit(from: String, map: Map<String, List<String>>, instructions: List<Int>): Long {
-    var actual = from
-    var i = 0L
-    while (!actual.endsWith("Z"))  {
-        actual = map[actual]!![instructions[(i++ % instructions.size).toInt()]]
-    }
-    return i
-}
-
-fun smallestCommonMultiple(numbers: List<Long>): Long {
+fun lowestCommonMultiple(numbers: List<Long>): Long {
     val max = numbers.max()
     var i = 1L
     while (true) {
