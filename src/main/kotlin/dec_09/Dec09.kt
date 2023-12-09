@@ -8,16 +8,9 @@ fun solve(input: List<String>, isBackward: Boolean = false): Int = input.sumOf {
     it.split(" ").map(String::toInt).next(isBackward)
 }
 
-private fun List<Int>.next(isBackward: Boolean = false): Int {
-    var series = this.toMutableList()
-    val next = mutableListOf(if (isBackward) series.first() else series.last())
-    while (series.any { it != 0}) {
-        series = series.indices.drop(1).fold(mutableListOf()) { diffs, i ->
-            diffs.also { it.add(series[i] - series[i - 1]) }
-        }
-        next.add(if (isBackward) series.first() else series.last())
-    }
-    return next.indices.reversed().drop(1).fold(0) { prev, i ->
-        next[i] + if (isBackward) -prev else prev
-    }
+private fun List<Int>.next(isBackward: Boolean = false, series: MutableList<Int> = mutableListOf()): Int = when {
+    this.all { it == 0 } -> series.reversed().reduce { acc, n -> n + if (isBackward) -acc else acc }
+    else -> this.indices.drop(1).fold(mutableListOf<Int>()) { diffs, i ->
+                diffs.also { it.add(this[i] - this[i - 1]) }
+            }.next(isBackward, series.also { it.add(if (isBackward) this.first() else this.last()) })
 }
