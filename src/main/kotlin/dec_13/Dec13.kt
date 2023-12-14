@@ -27,24 +27,24 @@ private fun List<String>.rotateRight(): List<String> {
     return rotated
 }
 
-private fun findMirror(note: Note): Int {
-    val top = findMirror(note.normal)
+private fun findMirror(note: Note, smudgeLimit: Int = 0): Int {
+    val top = findMirror(note.normal, smudgeLimit)
     if (top != null) return top * 100
-    return findMirror(note.rotated)!!
+    return findMirror(note.rotated, smudgeLimit)!!
 }
 
-private fun findMirror(note: List<String>): Int? {
+private fun findMirror(note: List<String>, smudgeLimit: Int): Int? {
     var actual = note
     var dropped = 0
     val minSize = 2
-    while (!actual.isMirrored() && actual.size >= minSize) {
+    while (!actual.isMirrored(smudgeLimit) && actual.size >= minSize) {
         actual = actual.drop(1)
         dropped++
     }
     if (actual.size >= minSize) return dropped + actual.size / 2
     actual = note
     dropped = 0
-    while (!actual.isMirrored() && actual.size >= minSize) {
+    while (!actual.isMirrored(smudgeLimit) && actual.size >= minSize) {
         actual = actual.dropLast(1)
         dropped++
     }
@@ -52,5 +52,19 @@ private fun findMirror(note: List<String>): Int? {
     return null
 }
 
-private fun List<String>.isMirrored(): Boolean = this.size % 2 == 0 &&
-    (0..this.lastIndex / 2).all { this[it] == this[this.lastIndex - it] }
+private fun List<String>.isMirrored(smudgeLimit: Int): Boolean {
+    if (this.size % 2 != 0) return false
+    var smudge = 0
+    var i = 0
+    while (i <= this.lastIndex / 2 && smudge <= smudgeLimit) {
+        smudge += this[i].hammingDistance(this[this.lastIndex - i])
+        i++
+    }
+    return smudge == smudgeLimit
+}
+
+/* Part 2 */
+
+fun part2(input: List<String>): Int = parse(input).sumOf { findMirror(it, 1) }
+
+private fun String.hammingDistance(other: String): Int = this.zip(other).count { it.first != it.second }
